@@ -14,6 +14,7 @@ public class MoveToPoint : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		mainTsf = mainScene.transform;
+		StartCoroutine(FadeImage());
 	}
 	
 	// Update is called once per frame
@@ -65,8 +66,8 @@ public class MoveToPoint : MonoBehaviour {
 				GetComponent<MeshRenderer>().material.color = c;
 			}
 			if (isInPosition(Camera.main.transform.position, transform.position))
-			{ 
-				yield break; 
+			{
+				yield break;
 			}
 			yield return new WaitForFixedUpdate();
 		}
