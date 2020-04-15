@@ -38,6 +38,9 @@ public class livingBirdsDemoScript : MonoBehaviour {
 	}
 
 	void OnGUI() {
+		if (GUI.Button(new Rect(10, 10, 150, 50), "Exit"))
+			Application.Quit();
+		/*
 		if (GUI.Button(new Rect(10, 10, 150, 50), "Pause"))
 			birdControl.SendMessage("Pause");
 		
@@ -56,6 +59,7 @@ public class livingBirdsDemoScript : MonoBehaviour {
 			GUI.Label (new Rect (170, 30, 1014, 20), "USE ARROW KEYS TO PAN THE CAMERA");
 			GUI.Label (new Rect (170, 50, 1014, 20), "Click a bird to kill it, you monster.");
 		}
+		*/
 	}
 
 	IEnumerator SpawnSomeBirds(){
