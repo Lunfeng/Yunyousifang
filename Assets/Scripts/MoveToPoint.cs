@@ -21,7 +21,7 @@ public class MoveToPoint : MonoBehaviour {
 		
 	}
 
-	public void OnTriggerStay(Collider other)
+	public void OnnTriggerStay(Collider other)
 	{
 		Debug.Log(1);
 		if (other.gameObject.tag == "MainCamera")
@@ -46,6 +46,29 @@ public class MoveToPoint : MonoBehaviour {
 		if (isControlAble)
 		{
 			StartCoroutine(TranslatePosition());
+			StartCoroutine(FadeImage());
+		}
+	}
+	IEnumerator FadeImage()
+	{
+		Debug.Log("开始了！");
+
+		Color c = GetComponent<MeshRenderer>().material.color;
+		while (true)
+		{
+			float distence = (transform.position - Camera.main.transform.position).magnitude;
+			Debug.Log(distence);
+			if(distence < 3)
+			{
+				c.a = distence / 5.56f;
+				Debug.Log(c.a);
+				GetComponent<MeshRenderer>().material.color = c;
+			}
+			if (isInPosition(Camera.main.transform.position, transform.position))
+			{ 
+				yield break; 
+			}
+			yield return new WaitForFixedUpdate();
 		}
 	}
 
