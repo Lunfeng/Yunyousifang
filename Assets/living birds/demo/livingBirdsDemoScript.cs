@@ -38,8 +38,7 @@ public class livingBirdsDemoScript : MonoBehaviour {
 	}
 
 	void OnGUI() {
-		if (GUI.Button(new Rect(10, 10, 150, 50), "Exit"))
-			Application.Quit();
+		//if (GUI.Button(new Rect(10, 10, 150, 50), "Exit"))
 		/*
 		if (GUI.Button(new Rect(10, 10, 150, 50), "Pause"))
 			birdControl.SendMessage("Pause");

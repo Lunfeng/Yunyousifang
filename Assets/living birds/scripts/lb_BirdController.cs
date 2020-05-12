@@ -279,10 +279,8 @@ public class lb_BirdController : MonoBehaviour {
 
 	bool AreThereActiveTargets(){
 		if (birdGroundTargets.Count > 0 || birdPerchTargets.Count > 0){
-			Debug.Log("yes");
 			return true;
 		}else{
-			Debug.Log("no");
 			return false;
 		}
 	}
