@@ -44,9 +44,11 @@ MonoBehaviour:
       ContainsMagnet: 0
   databaseLoad:
     dataSetsToLoad:
+    - test
     - VuforiaMars_Images
     - VuforiaMars_VuMark
     dataSetsToActivate:
+    - test
     - VuforiaMars_Images
     - VuforiaMars_VuMark
   videoBackground:

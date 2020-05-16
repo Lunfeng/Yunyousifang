@@ -168,6 +168,8 @@ public class lb_BirdController : MonoBehaviour {
 	}
 
 	void UpdateBirds(){
+		if (!center.transform.parent.gameObject.activeSelf)
+			return;
 		//this function is called once a second
 		if(activeBirds < idealNumberOfBirds  && AreThereActiveTargets()){
 			//if there are less than ideal birds active, spawn a bird

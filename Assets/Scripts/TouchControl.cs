@@ -1,12 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class TouchControl : MonoBehaviour {
 
     public bool isTracking = false;
+    public bool isHelped = false;
+    public bool isHelpOn = true;
+    public bool isHelping = false;
     public GameObject main;
     public GameObject center;
+    public GameObject GuidePanel1;
+    public GameObject GuidePanel2;
+    public GameObject TrackGuide;
     public float screenWidth;
     public float screenHight;
     public float scale = 1f;
@@ -14,6 +21,7 @@ public class TouchControl : MonoBehaviour {
     float dis;
     private Touch nullTouch;
     public Vector2 startPos;
+    public int trackTimes = 0;
 
     private Touch oldTouch1;  //上次触摸点1(手指1)  
     private Touch oldTouch2;  //上次触摸点2(手指2)  
@@ -24,6 +32,7 @@ public class TouchControl : MonoBehaviour {
     // Use this for initialization
     void Start () {
         main = GameObject.Find("main");
+        main.SetActive(false);
         screenHight = Screen.height;
         screenWidth = Screen.width;
         dis = (transform.position - center.transform.position).magnitude;
@@ -34,6 +43,11 @@ public class TouchControl : MonoBehaviour {
 
     void Update()
     {
+        if(DefaultTrackableEventHandler.status)
+        {
+            main.SetActive(true);
+            TrackGuide.SetActive(false);
+        }
         switch (viewMode)
         {
             case 1:
@@ -45,15 +59,86 @@ public class TouchControl : MonoBehaviour {
         }
     }
 
+    public void OnToggle1ValueChanged(Toggle toggle)
+    {
+        if (toggle.isOn)
+        {
+            setMode(1);
+        }
+    }
+
+    public void OnToggle2ValueChanged(Toggle toggle)
+    {
+        if (toggle.isOn)
+        {
+            setMode(2);
+        }
+    }
+
     public void setMode(int mode)
     {
         viewMode = mode;
+        //return;
+        if(!DefaultTrackableEventHandler.status && isHelpOn && DefaultTrackableEventHandler.trackTimes >= 1)
+        {
+            if (isHelping)
+                return;
+            switch (viewMode)
+            {
+                case 1:
+                    GuidePanel1.SetActive(true);
+                    isHelping = true;
+                    break;
+               case 2:
+                    GuidePanel2.SetActive(true);
+                    isHelping = true;
+                    break;
+        }
+
+        }
+    }
+
+    public void FinishHelp()
+    {
+        isHelping = false;
+    }
+
+    public void setHelp()
+    {
+        isHelpOn = isHelpOn ? false : true;
+    }
+
+    void getHelp()
+    {
+        if(!isHelped && isHelpOn && DefaultTrackableEventHandler.trackTimes >= 1)
+        {
+            if (isHelping)
+                return;
+            isHelped = true;
+            switch (viewMode)
+            {
+                case 1:
+                    GuidePanel1.SetActive(true);
+                    isHelping = true;
+                    break;
+                case 2:
+                    GuidePanel2.SetActive(true);
+                    isHelping = true;
+                    break;
+            }
+        }
     }
 
     void mode1()
     {
-        if (!DefaultTrackableEventHandler.status)
+        if (DefaultTrackableEventHandler.status)
         {
+            isHelped = false;
+            dis = (transform.position - center.transform.position).magnitude;
+        }
+        else
+        {
+            getHelp();
             main.transform.localScale = Vector3.one * 15;
             if (Input.touchCount == 1)// && Input.GetTouch(0).phase == TouchPhase.Moved
             {
@@ -62,7 +147,7 @@ public class TouchControl : MonoBehaviour {
                 angle.z = 0;
                 angle.x = Mathf.Clamp(angle.x, 0f, 88f);
                 //angle.x = angle.x < 90 ? Mathf.Clamp(angle.x, -10f, 88f) : Mathf.Clamp(angle.x, 272f, 366f);
-                Debug.Log("AngleX: " + angle.x);
+                //Debug.Log("AngleX: " + angle.x);
                 transform.eulerAngles = angle;
             }
             else if(Input.touchCount >= 1)
@@ -98,18 +183,19 @@ public class TouchControl : MonoBehaviour {
             }
             transform.position = center.transform.position - transform.forward * dis * scale;
         }
-        else
-        {
-            dis = (transform.position - center.transform.position).magnitude;
-        }
     }
 
     // Update is called once per frame
     void mode2()
     {
         //Input.simulateMouseWithTouches = true;
-        if (!DefaultTrackableEventHandler.status)
+        if (DefaultTrackableEventHandler.status)
         {
+            isHelped = false;
+        }
+        else
+        {
+            getHelp();
             Touch leftTouch = nullTouch;
             Touch rightTouch = nullTouch;
 
@@ -126,8 +212,18 @@ public class TouchControl : MonoBehaviour {
                     else
                     {
                         var deltaposition = leftTouch.position - startPos;
-                        transform.Translate((transform.forward * deltaposition.y + transform.right * deltaposition.x) * 0.04f, Space.World);
-                        Debug.Log("l: " + leftTouch.position);
+                        deltaposition.x *= 1920 / screenWidth;
+                        deltaposition.y *= 1080 / screenHight;
+                        Vector3 pos = (Vector3.forward * deltaposition.y + Vector3.right * deltaposition.x);
+                        pos = pos * Time.deltaTime * 0.15f;
+                        Debug.Log("raw " + pos);
+                        pos.x = Mathf.Clamp(pos.x, -3, 3);
+                        pos.z = Mathf.Clamp(pos.z, -3, 3);
+                        //pos.x = Mathf.Abs(pos.x) < 1.5 ? 0 : pos.x;
+                        //pos.z = Mathf.Abs(pos.z) < 1.5 ? 0 : pos.z;
+                        transform.Translate(pos, Space.Self);
+                        Debug.Log("left " + pos);
+                        Debug.Log("del " + deltaposition);
                         break;
                     }
                 }
@@ -140,47 +236,11 @@ public class TouchControl : MonoBehaviour {
                     rightTouch = Input.touches[i];
                     var deltaposition = rightTouch.deltaPosition;
                     transform.eulerAngles = new Vector3(transform.eulerAngles.x, transform.eulerAngles.y, 0);
-                    transform.eulerAngles += new Vector3(-deltaposition.y / 10, deltaposition.x / 10, 0f);
+                    transform.eulerAngles += new Vector3(-deltaposition.y * Time.deltaTime * 2, deltaposition.x * Time.deltaTime * 2, 0f);
                     Debug.Log("r: " + rightTouch.position);
                     break;
                 }
             }
-
-
-            //StopAllCoroutines();
-            //StartCoroutine(lookAt(main));
-            //transform.LookAt(main.transform);
-            //没有触摸  
-            /*
-            if (Input.touchCount <= 0)
-            {
-                return;
-            }
-
-            //单点触摸， 水平上下移动
-            if (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Moved)
-            {
-                var deltaposition = Input.GetTouch(0).deltaPosition;
-                Debug.Log(Input.GetTouch(0).position);
-                //transform.Rotate(new Vector3(-deltaposition.y * Time.deltaTime, 0f, deltaposition.x * Time.deltaTime));
-                //Vector3 forward = transform.forward * deltaposition.y * 0.1f;
-                //forward.x = 0;
-                //Vector3 right = transform.up * deltaposition.x * 0.1f;
-                //transform.Translate(forward+right);
-                //transform.Translate(deltaposition.y * 0.1f, 0f, deltaposition.x * 0.1f, Space.World);
-                transform.Translate((transform.forward * deltaposition.y + transform.right * deltaposition.x) * 0.1f, Space.World);
-                
-                //transform.eulerAngles = new Vector3(-deltaposition.y * 0.1f, 0f, deltaposition.x * 0.1f);
-            }
-            //单点触摸， 水平上下旋转  
-            if (Input.touchCount == 3)
-            {
-                //Touch touch = Input.GetTouch(0);-deltaposition.y * 0.1f, 0f, deltaposition.x * 0.1f, Space.World
-               //Vector2 deltaPos = touch.deltaPosition;
-                //transform.Rotate(Vector3.down * deltaPos.x * 0.1f, Space.World);
-                //transform.Rotate(Vector3.right * deltaPos.y * 0.1f, Space.World);
-            }
-            */
         }
     }
 

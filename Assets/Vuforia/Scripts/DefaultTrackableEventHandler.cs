@@ -18,6 +18,7 @@ public class DefaultTrackableEventHandler : MonoBehaviour, ITrackableEventHandle
 
     protected TrackableBehaviour mTrackableBehaviour;
     public static bool status = false;
+    public static int trackTimes = 0;
 
     #endregion // PROTECTED_MEMBER_VARIABLES
 
@@ -54,6 +55,7 @@ public class DefaultTrackableEventHandler : MonoBehaviour, ITrackableEventHandle
         {
             status = true;
             Debug.Log("Trackable " + mTrackableBehaviour.TrackableName + " found");
+            trackTimes++;
             OnTrackingFound();
         }
         else if (previousStatus == TrackableBehaviour.Status.TRACKED &&
